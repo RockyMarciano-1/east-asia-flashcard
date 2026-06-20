@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="동아시아사">
+<meta name="theme-color" content="#3C3489">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+<title>동아시아사 플래시카드</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --p:#534AB7;--pl:#EEEDFE;--pm:#AFA9EC;--pd:#3C3489;
+  --t:#1a1a2e;--tm:#666680;--bg:#f0f0fb;--cb:#fff;
+  --bo:rgba(83,74,183,0.18);--ok:#1D9E75;--okl:#E1F5EE
+}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+  background:var(--bg);
+  display:flex;flex-direction:column;
+  height:100vh;height:100dvh
+}
+/* 헤더 */
+.hd{background:var(--cb);border-bottom:1px solid var(--bo);padding:12px 18px 10px;flex-shrink:0}
+.hd-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.title{font-size:16px;font-weight:700;color:var(--pd)}
+.pills{display:flex;gap:6px}
+.pill{font-size:13px;padding:3px 11px;border-radius:100px;font-weight:600}
+.pill.ok{background:var(--okl);color:var(--ok)}
+.pill.lf{background:var(--pl);color:var(--pd)}
+.pbar-wrap{background:#ddddf0;border-radius:100px;height:5px;overflow:hidden}
+.pbar{height:100%;background:var(--p);border-radius:100px;transition:width .35s ease}
+/* 본문 */
+.main{flex:1;display:flex;flex-direction:column;align-items:center;padding:14px 14px 16px;gap:12px;overflow:hidden}
+/* 모드 */
+.modes{display:flex;gap:8px;width:100%}
+.mb{flex:1;padding:11px 2px;border-radius:12px;border:1.5px solid var(--bo);background:var(--cb);color:var(--tm);font-size:14px;font-weight:600;font-family:inherit;-webkit-appearance:none;cursor:pointer}
+.mb.on{background:var(--pl);border-color:var(--pm);color:var(--pd)}
+/* 카운터 */
+.cnt{font-size:14px;color:var(--tm);font-weight:500}
+/* 카드 */
+.cw{width:100%;flex:1;min-height:140px;position:relative;cursor:pointer;border-radius:20px}
+.face{position:absolute;inset:0;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px 20px 46px;transition:opacity .22s ease}
+.front{background:var(--cb);border:1.5px solid var(--bo);box-shadow:0 3px 18px rgba(83,74,183,.10);opacity:1;z-index:2;pointer-events:auto}
+.back{background:var(--pd);box-shadow:0 3px 18px rgba(83,74,183,.22);opacity:0;z-index:1;pointer-events:none}
+.cw.flipped .front{opacity:0;pointer-events:none;z-index:1}
+.cw.flipped .back{opacity:1;pointer-events:auto;z-index:2}
+.qn{font-size:13px;font-weight:700;letter-spacing:.08em;color:var(--p);margin-bottom:12px}
+.qt{font-size:19px;color:var(--t);text-align:center;line-height:1.75;font-weight:400;word-break:keep-all;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.hint{position:absolute;bottom:14px;font-size:13px;color:var(--tm)}
+.al{font-size:12px;font-weight:700;letter-spacing:.12em;color:rgba(255,255,255,.5);margin-bottom:12px}
+.at{font-size:29px;color:#fff;text-align:center;font-weight:700;line-height:1.5;word-break:keep-all}
+/* 버튼 */
+.btns{display:flex;gap:10px;width:100%;flex-shrink:0}
+.btn{flex:1;padding:15px 0;border-radius:14px;border:1.5px solid var(--bo);background:var(--cb);color:var(--t);font-size:17px;font-weight:600;font-family:inherit;-webkit-appearance:none;cursor:pointer}
+.btn:active{opacity:.7}
+.btn.nx{background:var(--p);color:#fff;border-color:var(--p);flex:1.8}
+.btns2{display:flex;gap:10px;width:100%;flex-shrink:0}
+.btn2{flex:1;padding:12px 0;border-radius:12px;border:1.5px solid var(--bo);background:var(--cb);color:var(--tm);font-size:15px;font-weight:600;font-family:inherit;-webkit-appearance:none;cursor:pointer}
+.btn2:active{opacity:.7}
+.sw{font-size:12px;color:var(--tm);opacity:.55;flex-shrink:0}
+/* 토스트 */
+.toast{position:fixed;bottom:36px;left:50%;transform:translateX(-50%) translateY(60px);background:rgba(26,26,46,.9);color:#fff;font-size:15px;padding:11px 22px;border-radius:100px;opacity:0;transition:opacity .22s,transform .22s;pointer-events:none;white-space:nowrap;z-index:999}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-height:650px){
+  .main{gap:8px;padding:10px 12px 12px}
+  .qt{font-size:17px}.at{font-size:24px}
+  .btn{padding:12px 0;font-size:15px}.btn2{padding:10px 0;font-size:13px}
+}
+</style>
+</head>
+<body>
+<div class="hd">
+  <div class="hd-top">
+    <div class="title">📚 동아시아사 플래시카드</div>
+    <div class="pills">
+      <span class="pill ok">✓ <span id="dc">0</span></span>
+      <span class="pill lf">남은 <span id="lc">92</span></span>
+    </div>
+  </div>
+  <div class="pbar-wrap"><div class="pbar" id="pb" style="width:1%"></div></div>
+</div>
+<div class="main" id="main">
+  <div class="modes">
+    <button class="mb on" onclick="setMode('random')">🔀 랜덤</button>
+    <button class="mb" onclick="setMode('order')">📋 순서대로</button>
+    <button class="mb" onclick="setMode('wrong')">❌ 틀린 것만</button>
+  </div>
+  <div class="cnt" id="cnt">1 / 92</div>
+  <div class="cw" id="cw">
+    <div class="face front">
+      <div class="qn" id="qn">Q 1</div>
+      <div class="qt" id="qt"></div>
+      <div class="hint">탭하면 정답 확인 👆</div>
+    </div>
+    <div class="face back">
+      <div class="al">정 답</div>
+      <div class="at" id="at"></div>
+    </div>
+  </div>
+  <div class="btns">
+    <button class="btn" onclick="prev()">← 이전</button>
+    <button class="btn nx" onclick="next()">다음 →</button>
+  </div>
+  <div class="btns2">
+    <button class="btn2" onclick="markWrong()">❌ 틀림 표시</button>
+    <button class="btn2" onclick="resetShuffle()">🔀 다시 섞기</button>
+  </div>
+  <div class="sw">← 스와이프로도 넘길 수 있어요 →</div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+var QA=[
+{n:1,q:"일본의 가장 북쪽에 위치한 섬의 이름은?",a:"홋카이도"},
+{n:2,q:"일본 서남부 및 다이토 제도에 위치한 현으로, 과거 류큐왕국으로 불리던 이곳의 이름은?",a:"오키나와"},
+{n:3,q:"일본의 행정 구역을 47개로 구분짓는 명칭으로 일본의 광역지방 공공단체를 뭐라 이르는 말?",a:"도도부현"},
+{n:4,q:"일본 속담 중 태어날 때는 00에서, 결혼식은 00에서, 죽어서는 0에 묻힌다는 말이 있다. 빈칸에 들어갈 말을 순서대로 쓰면?",a:"신사, 교회, 절"},
+{n:5,q:"일본의 전통적인 민간 신앙으로, 대부분의 일본인들이 믿고 있는 일본의 전통 종교를 뭐라고 하는가?",a:"신토(신도)"},
+{n:6,q:"일본의 입학식이 시행되는 것은 몇월인가?",a:"4월"},
+{n:7,q:"일제 강점기 때, 일본이 내선일체 사상을 내세우며 조선인들에게 일본인으로서의 인식을 심어주기 위해 남산에 세운 일본식 신사의 이름은?",a:"조선신궁"},
+{n:8,q:"일본의 신사에서 연초 그 해의 운을 점치기 위해 종이를 뽑는 행위는?",a:"오미쿠지"},
+{n:9,q:"일본의 사원, 신사 등에서 소원을 적어 봉납하는 목판을 무엇이라 하는가?",a:"에마"},
+{n:10,q:"일본 최대의 코리아 타운인 신오쿠보가 있는 곳이자, 젊은이들이 많이 모이는 부도심은?",a:"신주쿠"},
+{n:11,q:"일본 최대의 코리아 타운이 있는 도쿄의 이 역의 이름은?",a:"신오쿠보역"},
+{n:12,q:"2001년 신오쿠보 역에서 선로에 뛰어든 일본인 취객을 구하려다 목숨을 잃은 한국인 유학생의 이름은?",a:"이수현"},
+{n:13,q:"일본에서 전기, PC산업으로 시작하여 오늘날 오타쿠의 성지, 오피스 타운으로 불리는 이 곳의 명칭은?",a:"아키하바라"},
+{n:14,q:"2024년 기준, 일본의 연호(원호)는?",a:"레이와"},
+{n:15,q:"일본의 버스는 일반적으로 ( )에서 탑승하여 ( )(으)로 내리는 구조이다.",a:"뒤, 앞"},
+{n:16,q:"일본의 도로는 ( )통행이다.",a:"좌측"},
+{n:17,q:"일본은 헌법 20조에 따라 대한민국과 달리 이 날을 공휴일로 지정하지 않았다. 이 날은? (하나만 써도 정답)",a:"성탄절, 석가탄신일"},
+{n:18,q:"일본의 JR에서 운영하는 것으로, 세계 최초의 고속철도 시스템은?",a:"신칸센"},
+{n:19,q:"일본어로 역에서 파는 도시락의 줄임말로, 여행객들이 열차 안에서 먹는 이것의 이름은?",a:"에키벤"},
+{n:20,q:"국가에서 주관하는 일본의 대학입학 통일시험의 이름은?",a:"센터시험/대학입학공통테스트"},
+{n:21,q:"신사 입구에 세우는 기둥문으로, 인간계와 신계의 경계의 역할을 하는 이것의 이름은?",a:"토리이/도리이"},
+{n:22,q:"올바른 신사참배의 순서로 나열하시오.",a:"동전넣기→2번인사→2번박수→소원빌기→1번인사"},
+{n:23,q:"아베 신조가 시행했던 것으로, 최저시급과 물가를 올리는 데에 집중했던 정책의 이름은?",a:"아베노믹스"},
+{n:24,q:"도쿄 아사쿠사에 위치한 절로, 도쿄에서 가장 큰 사찰인 이곳의 이름은?",a:"센소지"},
+{n:25,q:"도쿄 아사쿠사의 센소지 정문으로, 좌우에 바람과 번개의 신이 지키는 이 문의 이름은?",a:"카미나리몬"},
+{n:26,q:"정통 문화에 대해 사회 내부에서 독자적 특징을 보여주는 소집단의 문화를 일컫는 단어는?",a:"서브컬처/하위문화"},
+{n:27,q:"일본 도쿄 중심에 있는 궁궐로, 천황과 황후의 거처인 이곳의 이름은?",a:"황거/고쿄"},
+{n:28,q:"황거에서 실제 천황이 주거하는 곳의 이름은?",a:"어소/고쇼"},
+{n:29,q:"2024년 현재 일본 천황의 이름은?",a:"나루히토"},
+{n:30,q:"일본이 이때 이후로 그레고리력(양력)만을 사용하게 된 시점은?",a:"메이지 유신"},
+{n:31,q:"일본 3대마츠리 중 하나로, 매년 7월 교토 야사카 신사에서 열리는 마츠리의 이름은?",a:"기온마츠리"},
+{n:32,q:"일본 3대마츠리 중 하나로, 매년 7월 오사카에서 열리는 마츠리의 이름은?",a:"텐진마츠리"},
+{n:33,q:"일본 3대마츠리 중 하나로, 매년 5월 도쿄 간다묘진신사를 중심으로 열리는 마츠리의 이름은?",a:"간다마츠리"},
+{n:34,q:"삿포로에서 매년 2월 초에 열리며 눈축제라고도 불리는 대표적인 겨울 축제는?",a:"유키마츠리"},
+{n:35,q:"신사나 사찰앞에서 손을 닦고 입을 헹구는 테미즈야의 순서를 바르게 나열하시오.",a:"원손→오른손→원손→입→정리"},
+{n:36,q:"아기가 태어난 뒤 처음으로 신사에 가서 하는 참배를 무엇이라 하는가?",a:"오미야마이리"},
+{n:37,q:"약 8만여 곳에 달하는 신사를 통괄하며, 아마테라스 오오미카미를 모시는 이곳은?",a:"이세신궁"},
+{n:38,q:"인연이라는 단어와 일본어 발음이 같아 신사에서 던지는 동전은 몇 엔 짜리인가?",a:"5엔"},
+{n:39,q:"1923년 조선인 폭동 유언비어로 한국인, 사회주의자, 중국인 등을 학살한 사건을 무엇이라 하는가?",a:"관동대학살"},
+{n:40,q:"도쿄도 스미다구에 위치한 일본에서 가장 높은 인공 구조물은?",a:"도쿄 스카이트리"},
+{n:41,q:"한국의 추석과 비슷한 양상을 보이는 일본의 명절 오봉은 몇월 며칠인가?",a:"8월 15일"},
+{n:42,q:"일본의 오봉 연휴는 일반적으로 언제부터 언제까지인가?",a:"8/13 ~ 8/16"},
+{n:43,q:"오봉의 첫날 조상의 영혼을 맞이하기 위해 피우는 불을 무엇이라고 하는가?",a:"무카에비"},
+{n:44,q:"오봉의 마지막 날 조상들의 영혼을 배웅하는 불을 무엇이라고 하는가?",a:"오쿠리비"},
+{n:45,q:"오봉날 망자의 극락왕생을 기원하는 불교 행사에서 시작하여 함께 춤을 추는 이 행사는?",a:"본오도리/봉오도리"},
+{n:46,q:"오봉날 정령마를 대신하여 올려두는 두 채소(쇼로우마)는 각각 무엇인가?",a:"오이, 가지"},
+{n:47,q:"씨름꾼 2명의 힘을 겨루는 일본 전통 무도이자 스포츠를 무엇이라 하는가?",a:"스모/스모우"},
+{n:48,q:"일본의 가장 큰 명절 오쇼가츠는 몇월 며칠인가?",a:"01월 01일"},
+{n:49,q:"よいお年をお迎えください (요이 오토시오 오무카에 쿠다사이)는 언제 하는 인사인가?",a:"1/1 이전 (12/31까지)"},
+{n:50,q:"あけましておめでとうございます (아케마시테 오메데토우 고자이마스)는 언제 하는 인사인가?",a:"1/1 이후"},
+{n:51,q:"오쇼가츠 당일을 포함하여 사흘간을 뭐라고 부르는가?",a:"산가니치"},
+{n:52,q:"오쇼가츠 당일을 포함하여 약 일주일을 뭐라고 부르는가?",a:"마츠노우치"},
+{n:53,q:"오쇼가츠에 대나무와 소나무로 이루어진 현관 장식의 이름은?",a:"가도마츠/카도마츠"},
+{n:54,q:"오쇼가츠 날 금줄과 비슷하게 현관 문에 거는 장식의 이름은?",a:"시메카자리"},
+{n:55,q:"일본의 세뱃돈을 일컫는 말은?",a:"오토시다마"},
+{n:56,q:"새해 첫날 복권처럼 판매하는 행운의 가방, 복 주머니라고도 불리는 이것은?",a:"후쿠부쿠로"},
+{n:57,q:"새해 첫날부터 약 7일 이내에 지인들에게 보내는 새해 인사 카드는?",a:"연하장"},
+{n:58,q:"일본 새해 음식 카가미모치에서 카가미의 의미는?",a:"거울"},
+{n:59,q:"거울의 형태를 본따 음과 양의 조화를 이루는 새해 떡의 이름은?",a:"카가미모치"},
+{n:60,q:"일본 연말연시 풍습: 도시코시소바 먹는 날 ( ) / 오조니 먹는 날 ( )",a:"12/31, 1/1"},
+{n:61,q:"가족의 번영을 바라며 1/1에 먹는 호화로운 새해 요리의 이름은?",a:"오세치요리"},
+{n:62,q:"새해 첫 참배시 따뜻하게 데워 마시는 달콤한 일본 감주의 이름은?",a:"아마자케"},
+{n:63,q:"새해 신사에서 올리는 첫 참배를 무엇이라 부르는가?",a:"하츠모우데"},
+{n:64,q:"일본 운세뽑기 순서의 빈칸: ( ) - 중길 - 소길 - 길 - 말길 - ( ) - 흉",a:"대길, 흉"},
+{n:65,q:"성인의 날은 매년 1월 몇 번째 주에 시행하는가?",a:"2번째/둘째"},
+{n:66,q:"성인식, 결혼식 등 공식 행사에 입는 실크로 만든 일본 전통의복은?",a:"기모노"},
+{n:67,q:"마츠리, 불꽃놀이 등에 주로 입는 면 소재 일본 전통의복은?",a:"유카타"},
+{n:68,q:"기모노와 함께 신는 신발은?",a:"조리"},
+{n:69,q:"유카타와 함께 신는 신발은?",a:"게타"},
+{n:70,q:"일본 전통의복을 입고 신는 신발은? (2개 중 1개)",a:"게타, 조리"},
+{n:71,q:"여성 전통의상에서 허리에 묶는 넓은 끈 형태의 이것은?",a:"오비"},
+{n:72,q:"스모 선수들이 입는 것으로, 과거 전통의복 속에 입던 옷의 이름은?",a:"훈도시"},
+{n:73,q:"일본 3대 명절 중 하나인 세츠분(절분)의 날짜는?",a:"02월 03일"},
+{n:74,q:"세츠분에 외치는 문구: ( )는(은) 밖으로, 복은 안으로! 빈칸에 들어갈 말은?",a:"도깨비"},
+{n:75,q:"세츠분에 볶은 콩을 뿌리는 놀이의 이름은?",a:"마메마키"},
+{n:76,q:"세츠분에 길한 방향을 향해 끊지 않고 먹는 두꺼운 김밥의 이름은?",a:"에호우마키"},
+{n:77,q:"굵게 말아낸 김초밥으로 한국의 김밥과 비슷한 이 음식의 이름은?",a:"후토마키"},
+{n:78,q:"교토에서 가장 높은 건물은?",a:"교토타워"},
+{n:79,q:"상대방에게 드러나는 겉마음을 뜻하는 일본의 가치관은?",a:"타테마에"},
+{n:80,q:"상대방에게 드러나지 않는 본심을 뜻하는 일본의 가치관은?",a:"혼네"},
+{n:81,q:"다른 사람에게 끼치는 폐해 그 자체를 뜻하는 일본 문화 용어는?",a:"메이와쿠"},
+{n:82,q:"선종의 교리를 반영하여 바위, 모래, 이끼 등을 활용한 일본 정원 양식은?",a:"가레산스이"},
+{n:83,q:"오늘날의 메이지 유신을, 당시 일본에서는 무엇이라 불렸는가?",a:"고잇신"},
+{n:84,q:"일본 봉건시대의 무사 계급을 일본어로 무엇이라 부르는가?",a:"사무라이"},
+{n:85,q:"794년 간무 천황이 교토로 천도하여 시작된 시대로, 무가 계급이 나타난 이 시기는?",a:"헤이안 시대"},
+{n:86,q:"유네스코 세계유산으로 청수사라고도 불리는 이 절의 일본식 이름은?",a:"키요미즈데라/기요미즈데라"},
+{n:87,q:"교토 청수사 앞, 전통 가옥들과 가게들이 나열된 거리의 이름은? (둘 중 하나)",a:"니넨자카/산넨자카"},
+{n:88,q:"원래 이름은 로쿠온지이나 금으로 만들어진 사리전으로 유명한 교토의 사찰은?",a:"금각사/킨카쿠지"},
+{n:89,q:"오봉 기간에 돌아오는 영혼을 맞이할 재단을 만드는 작업을 일본어로 무엇이라 하는가?",a:"봉다나츠쿠리"},
+{n:90,q:"도쿠가와 이에야스가 쇼군으로 임명받아 축하연을 벌인 교토의 성의 이름은?",a:"니죠성/니조성"},
+{n:91,q:"막부 시대 실제 권력을 가진 이 계급이자 장군의 일본어 발음이기도 한 이 단어는?",a:"쇼군"},
+{n:92,q:"16세기 말 도요토미 히데요시 사망 후 에도를 근거지로 삼은 인물의 이름은?",a:"도쿠가와 이에야스"}
+];
+
+var deck=[],idx=0,done=0,flipped=false,wrong=new Set(),mode='random';
+
+function shuffle(a){
+  var b=[].concat(a);
+  for(var i=b.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=b[i];b[i]=b[j];b[j]=t;}
+  return b;
+}
+function setMode(m){
+  mode=m;
+  var btns=document.querySelectorAll('.mb');
+  ['random','order','wrong'].forEach(function(v,i){btns[i].classList.toggle('on',v===m);});
+  if(m==='wrong'){
+    var wc=QA.filter(function(q){return wrong.has(q.n);});
+    if(!wc.length){toast('틀림 표시된 문제가 없어요!');return;}
+    deck=shuffle(wc);
+  } else if(m==='order'){
+    deck=QA.slice();
+  } else {
+    deck=shuffle(QA);
+  }
+  idx=0;done=0;flipped=false;render();
+}
+function render(){
+  if(!deck.length)return;
+  var q=deck[idx];
+  document.getElementById('qn').textContent='Q '+q.n;
+  document.getElementById('qt').textContent=q.q;
+  document.getElementById('at').textContent=q.a;
+  document.getElementById('cnt').textContent=(idx+1)+' / '+deck.length;
+  document.getElementById('pb').style.width=Math.max(1,Math.round((idx+1)/deck.length*100))+'%';
+  document.getElementById('dc').textContent=done;
+  document.getElementById('lc').textContent=deck.length-done;
+  var cw=document.getElementById('cw');
+  cw.classList.remove('flipped');
+  flipped=false;
+}
+function flip(){
+  flipped=!flipped;
+  document.getElementById('cw').classList.toggle('flipped',flipped);
+}
+function next(){
+  if(flipped)done=Math.min(done+1,idx+1);
+  if(idx<deck.length-1){idx++;}
+  else{done=0;idx=0;if(mode==='random')deck=shuffle(QA);toast('🎉 한 바퀴 완료!');}
+  render();
+}
+function prev(){if(idx>0){idx--;render();}}
+function markWrong(){
+  var q=deck[idx];
+  if(wrong.has(q.n)){wrong.delete(q.n);toast('표시 해제 ✓');}
+  else{wrong.add(q.n);toast('❌ 틀림 표시 '+wrong.size+'개');}
+}
+function resetShuffle(){
+  deck=shuffle(mode==='wrong'?QA.filter(function(q){return wrong.has(q.n);}):QA);
+  idx=0;done=0;flipped=false;render();toast('🔀 섞었습니다!');
+}
+var tt;
+function toast(msg){
+  var el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('on');
+  clearTimeout(tt);tt=setTimeout(function(){el.classList.remove('on');},2200);
+}
+
+/* 터치 스와이프 */
+var tx=0,ty=0,mv=false;
+document.getElementById('main').addEventListener('touchstart',function(e){
+  tx=e.touches[0].clientX;ty=e.touches[0].clientY;mv=false;
+},{passive:true});
+document.getElementById('main').addEventListener('touchmove',function(e){
+  if(Math.abs(e.touches[0].clientX-tx)>8||Math.abs(e.touches[0].clientY-ty)>8)mv=true;
+},{passive:true});
+document.getElementById('main').addEventListener('touchend',function(e){
+  var dx=e.changedTouches[0].clientX-tx;
+  var dy=e.changedTouches[0].clientY-ty;
+  if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>35){
+    if(dx<0)next();else prev();
+  } else if(!mv||(Math.abs(dx)<12&&Math.abs(dy)<12)){
+    if(!e.target.closest('button'))flip();
+  }
+},{passive:true});
+
+/* 초기화 */
+deck=shuffle(QA);
+render();
+</script>
+</body>
+</html>
